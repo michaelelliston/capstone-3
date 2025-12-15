@@ -1,15 +1,13 @@
 package org.yearup.data.mysql;
 
 import org.apache.ibatis.jdbc.SQL;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.yearup.data.CategoryDao;
 import org.yearup.models.Category;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,6 +50,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
     public Category getById(int categoryId) {
 
         String sql = "SELECT * FROM categories WHERE category_id = ?";
+
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             // Passes the categoryId from the parameter into the prepared statement.
@@ -73,18 +72,82 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
 
     @Override
     public Category create(Category category) {
-        // create a new category
-        return null;
+
+        String sql = "INSERT INTO categories (name, description) VALUES (?, ?);";
+
+        try (Connection connection = getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            preparedStatement.setString(1, category.getName());
+            preparedStatement.setString(2, category.getDescription());
+
+            int rowsUpdated = preparedStatement.executeUpdate();
+
+            ResultSet generatedKey = preparedStatement.getGeneratedKeys();
+            generatedKey.next();
+            int primaryKey = generatedKey.getInt(1);
+
+            if (rowsUpdated != 1) {
+                System.err.println("A problem occurred when updating a category.");
+                throw new RuntimeException();
+            }
+
+            // Closes the ResultSet.
+            generatedKey.close();
+
+            return new Category(primaryKey, category.getName(), category.getDescription());
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     public void update(int categoryId, Category category) {
-        // update category
+
+        if (categoryId != category.getCategoryId()) {
+            System.err.println("ID mismatch when updating category.");
+            throw new RuntimeException();
+        } else {
+
+            String sql = "UPDATE categories SET name = ?, description = ? WHERE category_id = ?;";
+
+            try (Connection connection = getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+                preparedStatement.setString(1, category.getName());
+                preparedStatement.setString(2, category.getDescription());
+                preparedStatement.setInt(3, categoryId);
+
+                int rowsUpdated = preparedStatement.executeUpdate();
+                if (rowsUpdated != 1) {
+                    System.err.println("An error occurred when updating category.");
+                    throw new RuntimeException();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     @Override
     public void delete(int categoryId) {
-        // delete category
+
+        String sql = "DELETE FROM categories WHERE category_id = ?;";
+
+        try (Connection connection = getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setInt(1, categoryId);
+
+            int rowsUpdated = preparedStatement.executeUpdate();
+            if (rowsUpdated != 1) {
+                System.err.println("An error occurred when deleting a category.");
+                throw new RuntimeException();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Category mapRow(ResultSet row) throws SQLException {
