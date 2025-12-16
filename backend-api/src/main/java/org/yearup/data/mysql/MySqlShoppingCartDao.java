@@ -1,7 +1,6 @@
 package org.yearup.data.mysql;
 
 import org.springframework.stereotype.Component;
-import org.yearup.data.ProductDao;
 import org.yearup.data.ShoppingCartDao;
 import org.yearup.models.Product;
 import org.yearup.models.ShoppingCart;
@@ -35,16 +34,9 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    Product p = new Product(resultSet.getInt("product_id"), resultSet.getString("name"),
-                            resultSet.getBigDecimal("price"), resultSet.getInt("category_id"),
-                            resultSet.getString("description"), resultSet.getString("subcategory"),
-                            resultSet.getInt("stock"), resultSet.getBoolean("featured"),
-                            resultSet.getString("image_url"));
 
                     ShoppingCartItem shoppingCartItem = new ShoppingCartItem();
-                    shoppingCartItem.setProduct(p);
-                    shoppingCartItem.setQuantity(resultSet.getInt("quantity"));
-                    shoppingCartItem.setDiscountPercent(BigDecimal.valueOf(0));
+                    shoppingCartItem.setProduct(mapRow(resultSet));
 
                     shoppingCart.add(shoppingCartItem);
                 }
@@ -87,5 +79,20 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     @Override
     public void deleteProductInCart(int productId, int userId) {
 
+    }
+
+    protected static Product mapRow(ResultSet row) throws SQLException
+    {
+        int productId = row.getInt("product_id");
+        String name = row.getString("name");
+        BigDecimal price = row.getBigDecimal("price");
+        int categoryId = row.getInt("category_id");
+        String description = row.getString("description");
+        String subCategory = row.getString("subcategory");
+        int stock = row.getInt("stock");
+        boolean isFeatured = row.getBoolean("featured");
+        String imageUrl = row.getString("image_url");
+
+        return new Product(productId, name, price, categoryId, description, subCategory, stock, isFeatured, imageUrl);
     }
 }
