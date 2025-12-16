@@ -46,8 +46,11 @@ public class ShoppingCartController
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            // use the shoppingcartDao to get all items in the cart and return the cart
-            return null;
+            if (this.shoppingCartDao.getByUserId(userId) == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            } else {
+                return this.shoppingCartDao.getByUserId(userId);
+            }
         }
         catch(Exception e)
         {
