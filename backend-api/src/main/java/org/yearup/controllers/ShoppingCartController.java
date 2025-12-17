@@ -75,13 +75,9 @@ public class ShoppingCartController {
         User user = userDao.getByUserName(userName);
         int userId = user.getId();
 
-        if (productId != product.getProductId()) {
-            System.err.println("ID mismatch when updating product.");
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-        } else {
-            this.shoppingCartDao.updateProductInCart(product, productId, userId);
-        }
+        this.shoppingCartDao.updateProductInCart(product, productId, userId);
     }
+}
 
 
 // add a DELETE method to clear all products from the current users cart

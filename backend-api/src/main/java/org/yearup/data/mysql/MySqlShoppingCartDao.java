@@ -1,6 +1,8 @@
 package org.yearup.data.mysql;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.ShoppingCartDao;
 import org.yearup.models.Product;
 import org.yearup.models.ShoppingCart;
@@ -8,10 +10,7 @@ import org.yearup.models.ShoppingCartItem;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 @Component
 public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDao {
@@ -64,16 +63,31 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
             if (rowsUpdated != 1) {
                 throw new RuntimeException();
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
-    public void updateProductInCart(int productId, Product product) {
+    public void updateProductInCart(Product product, int productId, int userId) {
 
+        String sql = "UPDATE shopping_cart SET product_id = ? WHERE product_id = ? AND user_id = ?;";
+
+        try (Connection connection = getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setInt(1, product.getProductId());
+            preparedStatement.setInt(2, productId);
+            preparedStatement.setInt(3, userId);
+
+            int rowsUpdated = preparedStatement.executeUpdate();
+
+            if (rowsUpdated != 1) {
+                throw new RuntimeException();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
