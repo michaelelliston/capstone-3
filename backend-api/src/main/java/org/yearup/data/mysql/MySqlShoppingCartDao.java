@@ -36,6 +36,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
 
                     ShoppingCartItem shoppingCartItem = new ShoppingCartItem();
                     shoppingCartItem.setProduct(mapRow(resultSet));
+                    shoppingCartItem.setQuantity(resultSet.getInt("quantity"));
 
                     shoppingCart.add(shoppingCartItem);
                 }
@@ -50,19 +51,49 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     @Override
     public ShoppingCart addProductToCart(Product product, int userId) {
 
-        String sql = "INSERT INTO shopping_cart (user_id, product_id, quantity) VALUES (?, ?, ?);";
+        String sql = "SELECT * FROM shopping_cart WHERE user_id = ? AND product_id = ?;";
 
         try (Connection connection = getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setInt(1, userId);
             preparedStatement.setInt(2, product.getProductId());
-            preparedStatement.setInt(3, 1);
 
-            int rowsUpdated = preparedStatement.executeUpdate();
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next() && resultSet.getInt("product_id") == product.getProductId()) {
+                    sql = "UPDATE shopping_cart SET quantity = ? WHERE product_id = ? AND user_id = ?;";
 
-            if (rowsUpdated != 1) {
-                throw new RuntimeException();
+                    try (PreparedStatement quantityStatement = connection.prepareStatement(sql)) {
+
+                        quantityStatement.setInt(1, resultSet.getInt("quantity") + 1);
+                        quantityStatement.setInt(2, product.getProductId());
+                        quantityStatement.setInt(3, userId);
+
+                        int rowsUpdated = quantityStatement.executeUpdate();
+
+                        if (rowsUpdated != 1) {
+                            throw new RuntimeException();
+                        }
+                    }
+
+                } else {
+
+                    sql = "INSERT INTO shopping_cart (user_id, product_id, quantity) VALUES (?, ?, ?);";
+
+                    try (PreparedStatement insertStatement = connection.prepareStatement(sql)) {
+
+                        insertStatement.setInt(1, userId);
+                        insertStatement.setInt(2, product.getProductId());
+                        insertStatement.setInt(3, 1);
+
+                        int rowsUpdated = insertStatement.executeUpdate();
+
+                        if (rowsUpdated != 1) {
+                            throw new RuntimeException();
+                        }
+                    }
+
+                }
             }
             return getByUserId(userId);
         } catch (SQLException e) {
@@ -76,7 +107,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         String sql = "UPDATE shopping_cart SET product_id = ? WHERE product_id = ? AND user_id = ?;";
 
         try (Connection connection = getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setInt(1, product.getProductId());
             preparedStatement.setInt(2, productId);
@@ -97,8 +128,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
 
     }
 
-    protected static Product mapRow(ResultSet row) throws SQLException
-    {
+    protected static Product mapRow(ResultSet row) throws SQLException {
         int productId = row.getInt("product_id");
         String name = row.getString("name");
         BigDecimal price = row.getBigDecimal("price");
