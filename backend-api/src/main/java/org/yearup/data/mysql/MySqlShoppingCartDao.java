@@ -46,8 +46,9 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         }
     }
 
+    // Adds a product to the user's cart. Returns the user's ShoppingCart object, so the frontend can successfully update the number of products in the cart.
     @Override
-    public void addProductToCart(Product product, int userId) {
+    public ShoppingCart addProductToCart(Product product, int userId) {
 
         String sql = "INSERT INTO shopping_cart (user_id, product_id, quantity) VALUES (?, ?, ?);";
 
@@ -63,6 +64,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
             if (rowsUpdated != 1) {
                 throw new RuntimeException();
             }
+            return getByUserId(userId);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

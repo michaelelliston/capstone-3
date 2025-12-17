@@ -51,7 +51,7 @@ public class ShoppingCartController {
 
     @PostMapping("products/{productId}")
     @ResponseStatus(value = HttpStatus.CREATED)
-    public void addToCart(Principal principal, @PathVariable int productId) {
+    public ShoppingCart addToCart(Principal principal, @PathVariable int productId) {
 
         String userName = principal.getName();
         User user = userDao.getByUserName(userName);
@@ -59,7 +59,7 @@ public class ShoppingCartController {
 
         Product p = this.productDao.getById(productId);
 
-        this.shoppingCartDao.addProductToCart(p, userId);
+        return this.shoppingCartDao.addProductToCart(p, userId);
     }
 
 
