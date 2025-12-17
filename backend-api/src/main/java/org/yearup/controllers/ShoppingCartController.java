@@ -20,6 +20,7 @@ import java.security.Principal;
 @RestController
 @RequestMapping("cart")
 @PreAuthorize("hasRole('ROLE_USER')")
+@CrossOrigin
 public class ShoppingCartController {
     private ShoppingCartDao shoppingCartDao;
     private UserDao userDao;
@@ -65,6 +66,22 @@ public class ShoppingCartController {
 // add a PUT method to update an existing product in the cart - the url should be
 // https://localhost:8080/cart/products/15 (15 is the productId to be updated)
 // the BODY should be a ShoppingCartItem - quantity is the only value that will be updated
+
+    @PutMapping("products/{productId}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void updateProductInCart(Principal principal, @PathVariable int productId, @RequestBody Product product) {
+
+        String userName = principal.getName();
+        User user = userDao.getByUserName(userName);
+        int userId = user.getId();
+
+        if (productId != product.getProductId()) {
+            System.err.println("ID mismatch when updating product.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        } else {
+            this.shoppingCartDao.updateProductInCart(product, productId, userId);
+        }
+    }
 
 
 // add a DELETE method to clear all products from the current users cart
