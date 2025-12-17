@@ -60,7 +60,8 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
             preparedStatement.setInt(2, product.getProductId());
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next() && resultSet.getInt("product_id") == product.getProductId()) {
+                // Checks if a record exists already before attempting to update it.
+                if (resultSet.next()) {
                     sql = "UPDATE shopping_cart SET quantity = ? WHERE product_id = ? AND user_id = ?;";
 
                     try (PreparedStatement quantityStatement = connection.prepareStatement(sql)) {
@@ -77,7 +78,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
                     }
 
                 } else {
-
+                    // Adds a product to the shopping cart if none of its type exists already.
                     sql = "INSERT INTO shopping_cart (user_id, product_id, quantity) VALUES (?, ?, ?);";
 
                     try (PreparedStatement insertStatement = connection.prepareStatement(sql)) {
