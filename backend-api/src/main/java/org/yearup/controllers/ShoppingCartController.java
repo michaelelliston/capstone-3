@@ -77,10 +77,26 @@ public class ShoppingCartController {
 
         this.shoppingCartDao.updateProductInCart(product, productId, userId);
     }
+
+    @DeleteMapping("remove/{id}")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void removeProductInCart(Principal principal, @PathVariable int productId) {
+
+        String userName = principal.getName();
+        User user = userDao.getByUserName(userName);
+        int userId = user.getId();
+
+        this.shoppingCartDao.removeProductInCart(productId, userId);
+    }
+
+    @DeleteMapping("")
+    @ResponseStatus(value = HttpStatus.OK)
+    public ShoppingCart emptyCart(Principal principal) {
+
+        String userName = principal.getName();
+        User user = userDao.getByUserName(userName);
+        int userId = user.getId();
+
+        return this.shoppingCartDao.emptyCart(userId);
+    }
 }
-
-
-// add a DELETE method to clear all products from the current users cart
-// https://localhost:8080/cart
-
-

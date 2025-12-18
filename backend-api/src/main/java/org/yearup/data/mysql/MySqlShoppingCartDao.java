@@ -1,6 +1,7 @@
 package org.yearup.data.mysql;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.ShoppingCartDao;
@@ -93,7 +94,6 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
                             throw new RuntimeException();
                         }
                     }
-
                 }
             }
             return getByUserId(userId);
@@ -125,8 +125,62 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     }
 
     @Override
-    public void deleteProductInCart(int productId, int userId) {
+    public void removeProductInCart(int productId, int userId) {
 
+        String sql = "SELECT * FROM shopping_cart WHERE product_id = ? AND user_id = ?;";
+
+        try (Connection connection = getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setInt(1, productId);
+            preparedStatement.setInt(2, userId);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next() && resultSet.getInt("quantity") <= 1) {
+                    sql = "DELETE FROM shopping_cart WHERE product_id = ? AND user_id = ?;";
+
+                    preparedStatement.setInt(1, productId);
+                    preparedStatement.setInt(2, userId);
+
+                    int rowsUpdated = preparedStatement.executeUpdate(sql);
+                    if (rowsUpdated != 1) {
+                        throw new SQLException();
+                    }
+                } else {
+                    sql = "UPDATE shopping_cart SET quantity = ? WHERE product_id = ? AND user_id = ?;";
+
+                    preparedStatement.setInt(1, resultSet.getInt("quantity") - 1);
+                    preparedStatement.setInt(2, productId);
+                    preparedStatement.setInt(3, userId);
+
+                    int rowsUpdated = preparedStatement.executeUpdate(sql);
+                    if (rowsUpdated != 1) {
+                        throw new SQLException();
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public ShoppingCart emptyCart(int userId) {
+
+        String sql = "DELETE FROM shopping_cart WHERE user_id = ?;";
+
+        try (Connection connection = getConnection();
+        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setInt(1, userId);
+
+            preparedStatement.executeUpdate();
+
+            return getByUserId(userId);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     protected static Product mapRow(ResultSet row) throws SQLException {
