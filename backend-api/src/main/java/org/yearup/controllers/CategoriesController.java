@@ -13,6 +13,11 @@ import org.yearup.models.Product;
 
 import java.util.List;
 
+/**
+ * Handles operations regarding Category by listening to specific paths on the front-end
+ * including Getting all or specific categories,
+ * allowing Admins to Post new categories, and Put or Delete existing categories.
+ */
 @RestController
 @RequestMapping("categories")
 @CrossOrigin
@@ -21,15 +26,15 @@ public class CategoriesController
     private CategoryDao categoryDao;
     private ProductDao productDao;
 
-
-    // Autowires the dependency injections
     @Autowired
     public CategoriesController(CategoryDao categoryDao, ProductDao productDao) {
         this.categoryDao = categoryDao;
         this.productDao = productDao;
     }
 
-    // Runs when requesting a Get at the mapped path.
+    /**
+     * Runs when requesting a Get at the mapped path, @return a list of all categories.
+     */
     @GetMapping("")
     @PreAuthorize("permitAll()")
     public List<Category> getAll()
@@ -37,7 +42,10 @@ public class CategoriesController
         return this.categoryDao.getAllCategories();
     }
 
-    // Runs when requesting a Get at the mapped path, and passes in the id from the path url.
+    /**
+     * Runs when requesting a Get at the mapped path, and passes in the id from the path url, returning a category.
+     * If the requested category id does not exist, returns a 404 response code.
+     */
     @GetMapping("{id}")
     @PreAuthorize("permitAll()")
     @ResponseStatus(value = HttpStatus.OK)
@@ -51,7 +59,10 @@ public class CategoriesController
         return category;
     }
 
-    // Runs when requesting a Get at the mapped path, and passes in the id from the path url.
+    /**
+     * Runs when requesting a Get at the mapped path, and passes in the id from the path url.
+     *
+     */
     @RequestMapping(path = "{categoryId}/products", method = RequestMethod.GET)
     @PreAuthorize("permitAll()")
     @ResponseStatus(value = HttpStatus.OK)
