@@ -47,3 +47,5 @@
 <br>
 * The DAO will then use secure PreparedStatements to obtain the results
 ![daomethodexample.png](backend-api/src/main/resources/daomethodexample.png)
+### Example of frontend showing filtered products:
+![frontendfilter.png](backend-api/src/main/resources/frontendfilter.png)
