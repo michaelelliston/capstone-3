@@ -53,6 +53,8 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
                 Product product = mapRow(row);
                 products.add(product);
             }
+            row.close();
+            statement.close();
         }
         catch (SQLException e)
         {
@@ -82,6 +84,8 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
                 Product product = mapRow(row);
                 products.add(product);
             }
+            row.close();
+            statement.close();
         }
         catch (SQLException e)
         {
@@ -107,6 +111,8 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             {
                 return mapRow(row);
             }
+            row.close();
+            statement.close();
         }
         catch (SQLException e)
         {
@@ -184,6 +190,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             statement.setInt(9, productId);
 
             statement.executeUpdate();
+            statement.close();
         }
         catch (SQLException e)
         {
@@ -204,6 +211,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             statement.setInt(1, productId);
 
             statement.executeUpdate();
+            statement.close();
         }
         catch (SQLException e)
         {
