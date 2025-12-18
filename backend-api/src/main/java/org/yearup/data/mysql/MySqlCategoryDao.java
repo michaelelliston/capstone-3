@@ -46,6 +46,10 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         }
     }
 
+    /**
+     * @param categoryId is obtained from the request header via the CategoriesController, and passed in to the MySQL query.
+     * @return the specified Category from the database
+     */
     @Override
     public Category getById(int categoryId) {
 
@@ -53,7 +57,6 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
 
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            // Passes the categoryId from the parameter into the prepared statement.
             preparedStatement.setInt(1, categoryId);
 
             try (ResultSet row = preparedStatement.executeQuery()) {
@@ -66,7 +69,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        // Returns null if something went wrong, or if there was no result set obtained from the query.
+        // Returns null if there was no result set obtained from the query.
         return null;
     }
 
