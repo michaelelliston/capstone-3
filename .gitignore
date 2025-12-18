@@ -1,5 +1,4 @@
 # --- IntelliJ / IDEA ---
-*.iml
 out/
 *.ipr
 *.iws
