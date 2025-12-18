@@ -130,7 +130,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         String sql = "SELECT * FROM shopping_cart WHERE product_id = ? AND user_id = ?;";
 
         try (Connection connection = getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setInt(1, productId);
             preparedStatement.setInt(2, userId);
@@ -139,23 +139,29 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
                 if (resultSet.next() && resultSet.getInt("quantity") <= 1) {
                     sql = "DELETE FROM shopping_cart WHERE product_id = ? AND user_id = ?;";
 
-                    preparedStatement.setInt(1, productId);
-                    preparedStatement.setInt(2, userId);
+                    try (PreparedStatement deleteStatement = connection.prepareStatement(sql)) {
 
-                    int rowsUpdated = preparedStatement.executeUpdate(sql);
-                    if (rowsUpdated != 1) {
-                        throw new SQLException();
+                        deleteStatement.setInt(1, productId);
+                        deleteStatement.setInt(2, userId);
+
+                        int rowsUpdated = deleteStatement.executeUpdate();
+                        if (rowsUpdated != 1) {
+                            throw new SQLException();
+                        }
                     }
                 } else {
                     sql = "UPDATE shopping_cart SET quantity = ? WHERE product_id = ? AND user_id = ?;";
 
-                    preparedStatement.setInt(1, resultSet.getInt("quantity") - 1);
-                    preparedStatement.setInt(2, productId);
-                    preparedStatement.setInt(3, userId);
+                    try (PreparedStatement updateStatement = connection.prepareStatement(sql)) {
 
-                    int rowsUpdated = preparedStatement.executeUpdate(sql);
-                    if (rowsUpdated != 1) {
-                        throw new SQLException();
+                        updateStatement.setInt(1, resultSet.getInt("quantity") - 1);
+                        updateStatement.setInt(2, productId);
+                        updateStatement.setInt(3, userId);
+
+                        int rowsUpdated = updateStatement.executeUpdate();
+                        if (rowsUpdated != 1) {
+                            throw new SQLException();
+                        }
                     }
                 }
             }
@@ -170,7 +176,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         String sql = "DELETE FROM shopping_cart WHERE user_id = ?;";
 
         try (Connection connection = getConnection();
-        PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setInt(1, userId);
 

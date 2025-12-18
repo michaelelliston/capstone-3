@@ -78,7 +78,7 @@ public class ShoppingCartController {
         this.shoppingCartDao.updateProductInCart(product, productId, userId);
     }
 
-    @DeleteMapping("remove/{id}")
+    @DeleteMapping("remove/{productId}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void removeProductInCart(Principal principal, @PathVariable int productId) {
 
