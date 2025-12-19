@@ -33,7 +33,8 @@ public class CategoriesController
     }
 
     /**
-     * Runs when requesting a Get at the mapped path, @return a list of all categories.
+     * Runs when requesting a get at the mapped path
+     * @return a list of all Category objects from the database.
      */
     @GetMapping("")
     @PreAuthorize("permitAll()")
@@ -43,8 +44,8 @@ public class CategoriesController
     }
 
     /**
-     * Runs when requesting a Get at the mapped path, and passes in the id from the path url, returning a category.
-     * If the requested category id does not exist, returns a 404 response code.
+     * @param id is obtained from the URL path
+     * @return the specific category with a matching id if one is found, otherwise returns Response Status 404.
      */
     @GetMapping("{id}")
     @PreAuthorize("permitAll()")
@@ -60,19 +61,26 @@ public class CategoriesController
     }
 
     /**
-     * Runs when requesting a Get at the mapped path, and passes in the id from the path url.
-     *
+     * @param categoryId is obtained from the URL path
+     * @return a list of Product objects from the database that have a matching id if any are found,
+     * otherwise returns Response Status 404.
      */
     @RequestMapping(path = "{categoryId}/products", method = RequestMethod.GET)
     @PreAuthorize("permitAll()")
     @ResponseStatus(value = HttpStatus.OK)
     public List<Product> getProductsById(@PathVariable int categoryId)
     {
+        if (this.categoryDao.getById(categoryId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
         return this.productDao.listByCategoryId(categoryId);
     }
 
-    // Runs when requesting a Post at the mapped path, and passes the request's body in as a Category object.
-    // Requires the user to be an admin.
+    /**
+     * Requires the user to be an Admin.
+     * @param category is obtained from the request body
+     * @return the category that is created if successful.
+     */
     @PostMapping()
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @ResponseStatus(value = HttpStatus.CREATED)
@@ -81,24 +89,36 @@ public class CategoriesController
         return this.categoryDao.create(category);
     }
 
-    // Runs when requesting a Put at the mapped path, and passes the path variable and request body into the method.
-    // Requires the user to be an admin.
+    /**
+     * Requires the user to be an Admin.
+     * @param id is obtained from the URL path
+     * @param category is obtained from the request body.
+     * Updates the Category with the corresponding id if successful.
+     */
     @PutMapping("{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void updateCategory(@PathVariable int id, @RequestBody Category category)
     {
+        if (this.categoryDao.getById(id) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
         this.categoryDao.update(id, category);
     }
 
-
-    // add annotation to call this method for a DELETE action - the url path must include the categoryId
-    // add annotation to ensure that only an ADMIN can call this function
+    /**
+     * Requires the user to be an Admin.
+     * @param id is obtained from the URL path.
+     * Deletes the Category with the corresponding id if successful.
+     */
     @DeleteMapping("{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable int id)
     {
+        if (this.categoryDao.getById(id) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
         this.categoryDao.delete(id);
     }
 }
