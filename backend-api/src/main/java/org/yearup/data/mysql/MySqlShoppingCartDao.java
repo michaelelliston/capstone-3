@@ -13,6 +13,13 @@ import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.*;
 
+/**
+ * Handles interacting with the Database's ShoppingCart table.
+ * Uses PreparedStatements to execute secure queries and updates.
+ * DataSource uses database information from the application.properties file.
+ * Implements methods outlined in the ShoppingCartDao interface.
+ * Acts as a Bean for the ShoppingCartController.
+ */
 @Component
 public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDao {
 
@@ -20,6 +27,11 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         super(dataSource);
     }
 
+    /**
+     * Creates a ShoppingCart object using a record from the database that has a matching user id.
+     * @param userId is obtained from the authenticated user making the request to the ShoppingCartController.
+     * @return a ShoppingCart object with the user's ShoppingCartItems inside a HashMap.
+     */
     @Override
     public ShoppingCart getByUserId(int userId) {
 
@@ -48,7 +60,12 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         }
     }
 
-    // Adds a product to the user's cart. Returns the user's ShoppingCart object, so the frontend can successfully update the number of products in the cart.
+    /**
+     * Adds a ShoppingCartItem to the authenticated user's ShoppingCart within the database.
+     * @param product is obtained via the ShoppingCartController calling its ProductDao dependency
+     * @param userId is obtained from the authenticated user making the request to ShoppingCartController.
+     * @return the user's updated ShoppingCart from the database.
+     */
     @Override
     public ShoppingCart addProductToCart(Product product, int userId) {
 
@@ -102,6 +119,12 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         }
     }
 
+    /**
+     * Updates a product in the user's ShoppingCart within the database if it exists into a different product.
+     * @param product is obtained via the request body from the ShoppingCartController.
+     * @param productId is obtained via the request URL path from the ShoppingCartController.
+     * @param userId is obtained from the authenticated user making the request.
+     */
     @Override
     public void updateProductInCart(Product product, int productId, int userId) {
 
@@ -124,6 +147,12 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         }
     }
 
+    /**
+     * Removes a ShoppingCartItem from the user's ShoppingCart within the database.
+     * If the ShoppingCartItem's quantity is more than 1, it updates the record's quantity instead of deleting the record.
+     * @param productId is obtained via the request URL path from the ShoppingCartController.
+     * @param userId is obtained via the authenticated user making the request.
+     */
     @Override
     public void removeProductInCart(int productId, int userId) {
 
@@ -170,6 +199,11 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         }
     }
 
+    /**
+     * Completely empties the user's ShoppingCart within the database, deleting records that match their user id.
+     * @param userId is obtained from the authenticated user making the request.
+     * @return the user's empty ShoppingCart.
+     */
     @Override
     public ShoppingCart emptyCart(int userId) {
 
@@ -189,6 +223,12 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         }
     }
 
+    /**
+     * Takes in a ResultSet from the database, and creates a Product object out of the data.
+     * @param row contains a record of a Product object from the database
+     * @return a Product object.
+     * @throws SQLException if there is a problem with the ResultSet passed in.
+     */
     protected static Product mapRow(ResultSet row) throws SQLException {
         int productId = row.getInt("product_id");
         String name = row.getString("name");
