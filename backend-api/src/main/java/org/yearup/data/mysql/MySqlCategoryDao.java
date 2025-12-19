@@ -179,7 +179,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
     }
 
     /**
-     * Utilizes double brace initialization
+     * Utilizes double brace initialization to map a ResultSet record and create a Category object.
      * @param row contains a record of a Category object from the database.
      * @return a Category object.
      * @throws SQLException if there is a problem with the ResultSet passed in.
