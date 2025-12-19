@@ -26,6 +26,10 @@ public class CategoriesController
     private CategoryDao categoryDao;
     private ProductDao productDao;
 
+    /**
+     * @param categoryDao is injected as a Bean from MySqlCategoryDao
+     * @param productDao is injected as a Bean from MySqlProductDao
+     */
     @Autowired
     public CategoriesController(CategoryDao categoryDao, ProductDao productDao) {
         this.categoryDao = categoryDao;
