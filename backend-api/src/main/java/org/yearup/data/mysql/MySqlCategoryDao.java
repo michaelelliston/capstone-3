@@ -11,13 +11,22 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Handles interacting with the Database's categories table.
+ * Uses PreparedStatements to execute secure queries and updates.
+ * DataSource uses database information from the application.properties file.
+ */
 @Component
 public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
     public MySqlCategoryDao(DataSource dataSource) {
         super(dataSource);
     }
 
-    // Implements the method from the CategoryDao interface.
+    /**
+     * Gets all Categories within the database.
+     * Implements the method from the CategoryDao interface.
+     * @return a list of Category objects for each Category in the database.
+     */
     @Override
     public List<Category> getAllCategories() {
         // Creates an empty ArrayList and stores it in a variable of type List.
@@ -47,8 +56,9 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
     }
 
     /**
-     * @param categoryId is obtained from the request header via the CategoriesController, and passed in to the MySQL query.
-     * @return the specified Category from the database
+     * Gets a specific Category from the database by matching id.
+     * @param categoryId is obtained from the URL path via the CategoriesController, and passed in to the MySQL query.
+     * @return the specified Category from the database if it exists, otherwise returns null.
      */
     @Override
     public Category getById(int categoryId) {
@@ -73,6 +83,11 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         return null;
     }
 
+    /**
+     * Creates a new Category within the database.
+     * @param category is passed in from the request body via the CategoriesController.
+     * @return a Category object of the newly created Category in the database if successful.
+     */
     @Override
     public Category create(Category category) {
 
@@ -98,13 +113,18 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
             // Closes the ResultSet.
             generatedKey.close();
 
-            return new Category(primaryKey, category.getName(), category.getDescription());
+            return getById(primaryKey);
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Updates an existing Category within the database.
+     * @param categoryId is obtained from the URL path via the CategoriesController, and passed in to the MySQL query.
+     * @param category is passed in from the request body via the CategoriesController.
+     */
     @Override
     public void update(int categoryId, Category category) {
 
@@ -133,6 +153,10 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         }
     }
 
+    /**
+     * Deletes a Category from the database with a matching id.
+     * @param categoryId is obtained from the URL path via the CategoriesController, and passed in to the MySQL query.
+     */
     @Override
     public void delete(int categoryId) {
 
@@ -153,6 +177,12 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         }
     }
 
+    /**
+     * Utilizes double brace initialization
+     * @param row contains a record of a Category object from the database.
+     * @return a Category object.
+     * @throws SQLException if there is a problem with the ResultSet passed in.
+     */
     private Category mapRow(ResultSet row) throws SQLException {
         int categoryId = row.getInt("category_id");
         String name = row.getString("name");
@@ -163,8 +193,6 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
             setName(name);
             setDescription(description);
         }};
-
         return category;
     }
-
 }
