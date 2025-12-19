@@ -15,6 +15,7 @@ import java.util.List;
  * Handles interacting with the Database's categories table.
  * Uses PreparedStatements to execute secure queries and updates.
  * DataSource uses database information from the application.properties file.
+ * Acts as a Bean for the CategoriesController
  */
 @Component
 public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
