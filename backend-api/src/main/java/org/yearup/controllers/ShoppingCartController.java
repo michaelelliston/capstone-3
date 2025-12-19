@@ -15,6 +15,12 @@ import org.yearup.models.User;
 
 import java.security.Principal;
 
+/**
+ * Handles operations regarding the ShoppingCart by listening to specific paths, including
+ * Getting a ShoppingCart by a user's id, adding a Product to a user's cart, updating an
+ * existing product in a user's cart, removing a specific product from a user's cart, or
+ * completely clearing a user's cart. Requires the user to be logged in.
+ */
 @RestController
 @RequestMapping("cart")
 @PreAuthorize("hasRole('ROLE_USER')")
@@ -24,6 +30,11 @@ public class ShoppingCartController {
     private UserDao userDao;
     private ProductDao productDao;
 
+    /**
+     * @param shoppingCartDao is injected as a Bean from MySqlShoppingCartDao
+     * @param userDao is injected as a bean from MySqlUserDao
+     * @param productDao is injected as a Bean from MySqlProductDao
+     */
     @Autowired
     public ShoppingCartController(ShoppingCartDao shoppingCartDao, UserDao userDao, ProductDao productDao) {
         this.shoppingCartDao = shoppingCartDao;
@@ -31,13 +42,15 @@ public class ShoppingCartController {
         this.productDao = productDao;
     }
 
-    // each method in this controller requires a Principal object as a parameter
+    /**
+     * Gets the authenticated user's ShoppingCart from the database
+     * @param principal is obtained from an authenticated user making the request.
+     * @return a ShoppingCart object that contains a HashMap of ShoppingCartItems, which each contain a Product object.
+     */
     @GetMapping("")
     public ShoppingCart getCart(Principal principal) {
         try {
-            // get the currently logged in username
             String userName = principal.getName();
-            // find database user by userId
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
@@ -47,6 +60,12 @@ public class ShoppingCartController {
         }
     }
 
+    /**
+     * Gets the authenticated user's ShoppingCart from the database after adding a Product to it. If successful, responds with Response Code 201 Created.
+     * @param principal is obtained from an authenticated user making the request.
+     * @param productId is obtained from the URL path.
+     * @return the user's updated ShoppingCart object from the database.
+     */
     @PostMapping("products/{productId}")
     @ResponseStatus(value = HttpStatus.CREATED)
     public ShoppingCart addToCart(Principal principal, @PathVariable int productId) {
@@ -60,11 +79,12 @@ public class ShoppingCartController {
         return this.shoppingCartDao.addProductToCart(p, userId);
     }
 
-
-// add a PUT method to update an existing product in the cart - the url should be
-// https://localhost:8080/cart/products/15 (15 is the productId to be updated)
-// the BODY should be a ShoppingCartItem - quantity is the only value that will be updated
-
+    /**
+     * Updates a product in the authenticated user's ShoppingCart within the database. If successful, responds with Response Code 204 No Content.
+     * @param principal is obtained from an authenticated user making the request.
+     * @param productId is obtained from the URL path.
+     * @param product is obtained from the request body.
+     */
     @PutMapping("products/{productId}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void updateProductInCart(Principal principal, @PathVariable int productId, @RequestBody Product product) {
@@ -76,6 +96,12 @@ public class ShoppingCartController {
         this.shoppingCartDao.updateProductInCart(product, productId, userId);
     }
 
+    /**
+     * Removes a product in the authenticated user's ShoppingCart by deleting the record within the database.
+     * If successful, responds with Response Code 204 No Content.
+     * @param principal is obtained from an authenticated user making the request.
+     * @param productId is obtained from the URL path.
+     */
     @DeleteMapping("remove/{productId}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void removeProductInCart(Principal principal, @PathVariable int productId) {
@@ -87,6 +113,11 @@ public class ShoppingCartController {
         this.shoppingCartDao.removeProductInCart(productId, userId);
     }
 
+    /**
+     * Deletes every record in the database's shopping cart table with a user id matching the current authenticated user's.
+     * @param principal is obtained from an authenticated user making the request.
+     * @return the empty ShoppingCart object.
+     */
     @DeleteMapping("")
     @ResponseStatus(value = HttpStatus.OK)
     public ShoppingCart emptyCart(Principal principal) {
